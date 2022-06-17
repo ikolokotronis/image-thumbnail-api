@@ -40,10 +40,12 @@ class ImageView(APIView):
             serializer.save()
             if user.tier.name == 'Basic':
                 original_image_relative_path = 'media/images/' + os.path.basename(image_instance.original_image.path)
-                image = PILImage.open(image_instance.original_image.path)
+                original_image_absolute_path = image_instance.original_image.path
+                image = PILImage.open(original_image_absolute_path)
                 image.thumbnail((image.width, user.tier.thumbnail_height))
                 image.save(original_image_relative_path + '_thumbnail200.png')
                 data['thumbnail200'] = "/" + original_image_relative_path + '_thumbnail200.png'
+                data["success"] = "Image uploaded successfully"
                 return Response(data, status=status.HTTP_200_OK)
             else:
                 return Response({'Access forbidden'}, status=status.HTTP_403_FORBIDDEN)
