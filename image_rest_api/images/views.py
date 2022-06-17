@@ -38,9 +38,9 @@ class ImageView(APIView):
         data = {}
         if serializer.is_valid():
             serializer.save()
+            original_image_absolute_path = image_instance.original_image.path
+            image = PILImage.open(original_image_absolute_path)
             if user.tier.name == "Basic":
-                original_image_absolute_path = image_instance.original_image.path
-                image = PILImage.open(original_image_absolute_path)
                 image.thumbnail((image.width, 200))
                 image.save("media/images/thumbnail_200px_" + os.path.basename(image_instance.original_image.path))
                 data['thumbnail_200px'] = "/"+"media/images/thumbnail_200px_" \
@@ -52,8 +52,6 @@ class ImageView(APIView):
             elif user.tier.name == "Enterprise":
                 pass
             else:
-                original_image_absolute_path = image_instance.original_image.path
-                image = PILImage.open(original_image_absolute_path)
                 image.thumbnail((image.width, user.tier.thumbnail_height))
                 image.save("media/images/thumbnail_"+str(user.tier.thumbnail_height)+"px_"+
                            os.path.basename(image_instance.original_image.path))
