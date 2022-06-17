@@ -38,15 +38,28 @@ class ImageView(APIView):
         data = {}
         if serializer.is_valid():
             serializer.save()
-            if user.tier.name == 'Basic':
-                original_image_relative_path = 'media/images/' + os.path.basename(image_instance.original_image.path)
+            if user.tier.name == "Basic":
+                original_image_absolute_path = image_instance.original_image.path
+                image = PILImage.open(original_image_absolute_path)
+                image.thumbnail((image.width, 200))
+                image.save("media/images/thumbnail_200px_" + os.path.basename(image_instance.original_image.path))
+                data['thumbnail_200px'] = "/"+"media/images/thumbnail_200px_" \
+                                          + os.path.basename(image_instance.original_image.path)
+                data["success"] = "Image uploaded successfully"
+                return Response(data, status=status.HTTP_200_OK)
+            elif user.tier.name == "Premium":
+                pass
+            elif user.tier.name == "Enterprise":
+                pass
+            else:
                 original_image_absolute_path = image_instance.original_image.path
                 image = PILImage.open(original_image_absolute_path)
                 image.thumbnail((image.width, user.tier.thumbnail_height))
-                image.save(original_image_relative_path + '_thumbnail200.png')
-                data['thumbnail200'] = "/" + original_image_relative_path + '_thumbnail200.png'
+                image.save("media/images/thumbnail_"+str(user.tier.thumbnail_height)+"px_"+
+                           os.path.basename(image_instance.original_image.path))
+                data['thumbnail_'+str(user.tier.thumbnail_height)+'px'] = "/" + "media/images/thumbnail_"\
+                                                                          + str(user.tier.thumbnail_height)+"px_" + \
+                                                                          os.path.basename(image_instance.original_image.path)
                 data["success"] = "Image uploaded successfully"
                 return Response(data, status=status.HTTP_200_OK)
-            else:
-                return Response({'Access forbidden'}, status=status.HTTP_403_FORBIDDEN)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
