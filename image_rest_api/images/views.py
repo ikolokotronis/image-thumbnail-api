@@ -1,3 +1,5 @@
+import os.path
+
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -28,10 +30,11 @@ class ImageView(APIView):
         if serializer.is_valid():
             serializer.save()
             if user.tier.name == 'Basic':
+                original_image_path = 'media/thumbnails/' + os.path.basename(image_instance.original_image.path)
                 image = PILImage.open(image_instance.original_image.path)
                 image.thumbnail((200, 200))
-                image.save('media/thumbnails/new_image.png')
-                data['thumbnail200'] = '/media/thumbnails/new_image.png'
+                image.save(original_image_path + '_thumbnail200.png')
+                data['thumbnail200'] = "/" + original_image_path + '_thumbnail200.png'
                 return Response(data, status=status.HTTP_200_OK)
             else:
                 return Response({'Access forbidden'}, status=status.HTTP_403_FORBIDDEN)
