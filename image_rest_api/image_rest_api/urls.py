@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from users.views import ApiOverview
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', ApiOverview.as_view()),
 ]
