@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 
-from users.views import ApiOverview
+from images.views import ApiOverview
 
 urlpatterns = [
     path('', ApiOverview.as_view()),

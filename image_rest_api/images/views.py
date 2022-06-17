@@ -11,6 +11,15 @@ from .serializer import ImageSerializer
 from PIL import Image as PILImage
 
 
+class ApiOverview(APIView):
+    def get(self, request, format=None):
+        overview = {
+            "Show available images": "GET /images/",
+            "Upload a new image": "POST /images/",
+        }
+        return Response(overview)
+
+
 class ImageView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
