@@ -25,9 +25,9 @@ class ImageView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        conversations = Image.objects.filter(user_id=request.user.id)
-        if conversations:
-            serializer = ImageSerializer(conversations, many=True)
+        images = Image.objects.filter(user_id=request.user.id)
+        if images:
+            serializer = ImageSerializer(images, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'No images found'}, status=status.HTTP_404_NOT_FOUND)
 
