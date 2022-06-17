@@ -1,5 +1,3 @@
-import os
-
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +7,7 @@ from rest_framework.views import APIView
 from .models import Image
 from .serializer import ImageSerializer
 from PIL import Image as PILImage
+
 
 class ImageView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -28,11 +27,12 @@ class ImageView(APIView):
         data = {}
         if serializer.is_valid():
             serializer.save()
-            image = PILImage.open(image_instance.original_image.path)
-            image.thumbnail((200, 200))
-            image.save('media/thumbnails/new_image.png')
-            data['original_image'] = serializer.data['original_image']
-            data['thumbnail200'] = '/media/thumbnails/new_image.png'
-            data['success'] = 'Image saved successfully'
-            return Response(data, status=status.HTTP_200_OK)
+            if user.tier.name == 'Basic':
+                image = PILImage.open(image_instance.original_image.path)
+                image.thumbnail((200, 200))
+                image.save('media/thumbnails/new_image.png')
+                data['thumbnail200'] = '/media/thumbnails/new_image.png'
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                return Response({'Access forbidden'}, status=status.HTTP_403_FORBIDDEN)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
