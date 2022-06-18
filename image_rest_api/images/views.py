@@ -39,25 +39,48 @@ class ImageView(APIView):
         if serializer.is_valid():
             serializer.save()
             original_image_absolute_path = image_instance.original_image.path
-            image = PILImage.open(original_image_absolute_path)
-            if user.tier.name == "Basic":
-                image.thumbnail((image.width, 200))
-                image.save("media/images/thumbnail_200px_" + os.path.basename(image_instance.original_image.path))
-                data['thumbnail_200px'] = "/"+"media/images/thumbnail_200px_" \
-                                          + os.path.basename(image_instance.original_image.path)
-                data["success"] = "Image uploaded successfully"
-                return Response(data, status=status.HTTP_200_OK)
-            elif user.tier.name == "Premium":
-                pass
-            elif user.tier.name == "Enterprise":
-                pass
-            else:
-                image.thumbnail((image.width, user.tier.thumbnail_height))
-                image.save("media/images/thumbnail_"+str(user.tier.thumbnail_height)+"px_"+
-                           os.path.basename(image_instance.original_image.path))
-                data['thumbnail_'+str(user.tier.thumbnail_height)+'px'] = "/" + "media/images/thumbnail_"\
-                                                                          + str(user.tier.thumbnail_height)+"px_" + \
-                                                                          os.path.basename(image_instance.original_image.path)
-                data["success"] = "Image uploaded successfully"
-                return Response(data, status=status.HTTP_200_OK)
+            original_image_relative_path = image_instance.original_image.url
+            file_name, file_extension = os.path.splitext(original_image_relative_path)
+            with PILImage.open(original_image_absolute_path) as image:
+                if user.tier.name == "Basic":
+                    image.thumbnail((image.width, 200))
+                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
+                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
+                    data["success"] = "Image uploaded successfully"
+                    return Response(data, status=status.HTTP_200_OK)
+                elif user.tier.name == "Premium":
+                    image.thumbnail((image.width, 400))
+                    image.save("." + file_name + "_400px_thumbnail" + file_extension)
+                    data['400px_thumbnail'] = file_name + "_400px_thumbnail" + file_extension
+                    image.thumbnail((image.width, 200))
+                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
+                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
+                    data["original_image"] = image_instance.original_image.url
+                    data["success"] = "Image uploaded successfully"
+                    return Response(data, status=status.HTTP_200_OK)
+                elif user.tier.name == "Enterprise":
+                    image.thumbnail((image.width, 400))
+                    image.save("." + file_name + "_400px_thumbnail" + file_extension)
+                    data['400px_thumbnail'] = file_name + "_400px_thumbnail" + file_extension
+                    image.thumbnail((image.width, 200))
+                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
+                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
+                    data["original_image"] = image_instance.original_image.url
+                    data["expiring_link"] = ""  # todo: implement expiring link
+                    data["success"] = "Image uploaded successfully"
+                    return Response(data, status=status.HTTP_200_OK)
+                else:
+                    image.thumbnail((image.width, user.tier.thumbnail_height))
+                    image.save("." + file_name + "_" + str(user.tier.thumbnail_height) + "px_thumbnail" + file_extension)
+                    data[str(user.tier.thumbnail_height) + 'px_thumbnail'] = file_name + \
+                                                                             "_" + \
+                                                                             str(user.tier.thumbnail_height) + \
+                                                                             "px_thumbnail" + \
+                                                                             file_extension
+                    if user.tier.presence_of_original_file_link:
+                        data["original_image"] = image_instance.original_image.url
+                    if user.tier.ability_to_fetch_expiring_link:
+                        pass  # todo: implement expiring link
+                    data["success"] = "Image uploaded successfully"
+                    return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
