@@ -17,7 +17,7 @@ class User(AbstractUser):
 
 class Tier(models.Model):
     name = models.CharField(max_length=255)
-    thumbnail_height = models.IntegerField()
+    thumbnail_height = models.IntegerField(null=True, blank=True)
     presence_of_original_file_link = models.BooleanField()
     ability_to_fetch_expiring_link = models.BooleanField()
 

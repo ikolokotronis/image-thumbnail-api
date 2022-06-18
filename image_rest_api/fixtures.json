@@ -4,7 +4,6 @@
         "pk": 1,
         "fields": {
             "name": "Basic",
-            "thumbnail_height": "200",
             "presence_of_original_file_link": false,
             "ability_to_fetch_expiring_link": false
         }
@@ -14,7 +13,6 @@
         "pk": 2,
         "fields": {
             "name": "Premium",
-            "thumbnail_height": "200",
             "presence_of_original_file_link": true,
             "ability_to_fetch_expiring_link": false
         }
@@ -24,7 +22,6 @@
         "pk": 3,
         "fields": {
             "name": "Enterprise",
-            "thumbnail_height": "200",
             "presence_of_original_file_link": true,
             "ability_to_fetch_expiring_link": true
         }
