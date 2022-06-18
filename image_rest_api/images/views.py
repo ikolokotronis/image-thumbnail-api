@@ -47,7 +47,7 @@ class ImageView(APIView):
                     image.save("." + file_name + "_200px_thumbnail" + file_extension)
                     data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
                     data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_200_OK)
+                    return Response(data, status=status.HTTP_201_CREATED)
                 elif user.tier.name == "Premium":
                     image.thumbnail((image.width, 400))
                     image.save("." + file_name + "_400px_thumbnail" + file_extension)
@@ -57,7 +57,7 @@ class ImageView(APIView):
                     data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
                     data["original_image"] = image_instance.original_image.url
                     data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_200_OK)
+                    return Response(data, status=status.HTTP_201_CREATED)
                 elif user.tier.name == "Enterprise":
                     image.thumbnail((image.width, 400))
                     image.save("." + file_name + "_400px_thumbnail" + file_extension)
@@ -68,8 +68,8 @@ class ImageView(APIView):
                     data["original_image"] = image_instance.original_image.url
                     data["expiring_link"] = ""  # todo: implement expiring link
                     data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_200_OK)
-                else:
+                    return Response(data, status=status.HTTP_201_CREATED)
+                elif user.tier.name not in ["Basic", "Premium", "Enterprise"]:
                     image.thumbnail((image.width, user.tier.thumbnail_height))
                     image.save("." + file_name + "_" + str(user.tier.thumbnail_height) + "px_thumbnail" + file_extension)
                     data[str(user.tier.thumbnail_height) + 'px_thumbnail'] = file_name + \
@@ -82,5 +82,7 @@ class ImageView(APIView):
                     if user.tier.ability_to_fetch_expiring_link:
                         pass  # todo: implement expiring link
                     data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_200_OK)
+                    return Response(data, status=status.HTTP_201_CREATED)
+            data["error"] = "Image upload failed"
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
