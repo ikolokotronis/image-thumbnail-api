@@ -17,7 +17,11 @@ class ImageTests(APITestCase):
         image = SimpleUploadedFile(name='test_image.jpg',
                                    content=open('images/test_images/test.jpg', 'rb').read(),
                                    content_type='image/jpg')
+        image2 = SimpleUploadedFile(name='test_image2.jpg',
+                                    content=open('images/test_images/test2.jpg', 'rb').read(),
+                                    content_type='image/jpg')
         Image.objects.create(original_image=image, user=user)
+        Image.objects.create(original_image=image2, user=user)
 
     def test_get_all_images(self):
         token = Token.objects.get(user__username='test')
@@ -26,7 +30,7 @@ class ImageTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(Image.objects.count(), 1)
+        self.assertEqual(Image.objects.count(), 2)
 
     def test_upload_image(self):
         token = Token.objects.get(user__username='test')
@@ -39,4 +43,5 @@ class ImageTests(APITestCase):
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 3)
+
