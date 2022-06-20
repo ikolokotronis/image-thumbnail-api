@@ -60,11 +60,7 @@ class ImageView(APIView):
     def __default_processing(self, image_instance, image, user):
         file_name, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
         image.save(f".{file_name}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
-        data = {str(user.tier.thumbnail_height) + 'px_thumbnail': file_name + \
-                                                                  "_" + \
-                                                                  str(user.tier.thumbnail_height) + \
-                                                                  "px_thumbnail" + \
-                                                                  file_extension}
+        data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_name}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
         if user.tier.presence_of_original_file_link:
             data["original_image"] = image_instance.original_image.url
         if user.tier.ability_to_fetch_expiring_link:
