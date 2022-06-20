@@ -20,7 +20,7 @@ from PIL import Image as PILImage
 @permission_classes([IsAuthenticated])
 def media_access(request, user_pk, image_pk, file_name):
     """
-    Access to image file from media folder.
+    Image access management.
     """
     user = request.user
     if user.pk != user_pk:
@@ -40,7 +40,7 @@ def media_access(request, user_pk, image_pk, file_name):
 @api_view(['GET'])
 def expiring_media_access(request, expiring_image_pk, file_name):
     """
-    Access to image file from media expiring folder.
+    Expiring image access management.
     """
     try:
         image = ExpiringImage.objects.get(pk=expiring_image_pk)
@@ -94,9 +94,9 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __enterprise_tier_processing(self, image_instance, image, user, expiration_time, *args):
-        # if int(expiration_time) < 300 or int(expiration_time) > 3000:
-        #     return Response({'error': 'Expiration time must be between 300 and 3000'},
-        #                     status=status.HTTP_400_BAD_REQUEST)
+        if int(expiration_time) < 300 or int(expiration_time) > 3000:
+            return Response({'error': 'Expiration time must be between 300 and 3000'},
+                            status=status.HTTP_400_BAD_REQUEST)
         original_image_url = image_instance.original_image.url
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
         expiring_image = ExpiringImage.objects.create(user=user, live_time=expiration_time)
