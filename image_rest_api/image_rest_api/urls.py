@@ -18,10 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 
-from images.views import ApiOverview
-
 urlpatterns = [
-    path('', ApiOverview.as_view()),
     path('admin/', admin.site.urls),
     path('images/', include('images.urls')),
 ]
