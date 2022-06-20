@@ -29,7 +29,6 @@ class ImageTests(APITestCase):
         url = reverse('image-view')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(User.objects.count(), 1)
         self.assertEqual(Image.objects.count(), 2)
 
     def test_upload_image(self):
@@ -42,6 +41,5 @@ class ImageTests(APITestCase):
         data = {'original_image': image}
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(User.objects.count(), 1)
         self.assertEqual(Image.objects.count(), 3)
 
