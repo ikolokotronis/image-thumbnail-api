@@ -24,6 +24,63 @@ class ImageView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.options = {'Basic': self.__basic_processing,
+                        'Premium': self.__premium_processing,
+                        'Enterprise': self.__enterprise_processing}
+
+    def __file_processing(self, image, image_instance, size):
+        image_relative_path = image_instance.original_image.url
+        file_name, file_extension = os.path.splitext(image_relative_path)
+        image.thumbnail((image.width, size))
+        return file_name, file_extension
+
+    def __basic_processing(self, image_instance, image, *args):
+        file_name, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name}_200px_thumbnail{file_extension}")
+        data = {'200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+                'success': 'Image uploaded successfully'}
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def __premium_processing(self, image_instance, image, *args):
+        file_name, file_extension = self.__file_processing(image, image_instance, 400)
+        image.save(f".{file_name}_400px_thumbnail{file_extension}")
+        file_name, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name}_200px_thumbnail{file_extension}")
+        data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
+                '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+                'original_image': image_instance.original_image.url,
+                'success': 'Image uploaded successfully'}
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def __enterprise_processing(self, image_instance, image, *args):
+        file_name, file_extension = self.__file_processing(image, image_instance, 400)
+        image.save(f".{file_name}_400px_thumbnail{file_extension}")
+        file_name, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name}_200px_thumbnail{file_extension}")
+        data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
+                '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+                'original_image': image_instance.original_image.url,
+                'expiring_link': "",
+                'success': 'Image uploaded successfully'}
+        return Response(data, status=status.HTTP_201_CREATED)
+
+    def __default_processing(self, image_instance, image, user):
+        file_name, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
+        image.save(f".{file_name}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
+        data = {str(user.tier.thumbnail_height) + 'px_thumbnail': file_name + \
+                                                                  "_" + \
+                                                                  str(user.tier.thumbnail_height) + \
+                                                                  "px_thumbnail" + \
+                                                                  file_extension}
+        if user.tier.presence_of_original_file_link:
+            data["original_image"] = image_instance.original_image.url
+        if user.tier.ability_to_fetch_expiring_link:
+            pass  # todo: implement expiring link
+        data["success"] = "Image uploaded successfully"
+        return Response(data, status=status.HTTP_201_CREATED)
+
     def get(self, request):
         images = Image.objects.filter(user_id=request.user.id)
         if images:
@@ -35,54 +92,9 @@ class ImageView(APIView):
         user = request.user
         image_instance = Image(user=user)
         serializer = ImageSerializer(image_instance, data=request.data)
-        data = {}
         if serializer.is_valid():
             serializer.save()
-            original_image_absolute_path = image_instance.original_image.path
-            original_image_relative_path = image_instance.original_image.url
-            file_name, file_extension = os.path.splitext(original_image_relative_path)
-            with PILImage.open(original_image_absolute_path) as image:
-                if user.tier.name == "Basic":
-                    image.thumbnail((image.width, 200))
-                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
-                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
-                    data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_201_CREATED)
-                elif user.tier.name == "Premium":
-                    image.thumbnail((image.width, 400))
-                    image.save("." + file_name + "_400px_thumbnail" + file_extension)
-                    data['400px_thumbnail'] = file_name + "_400px_thumbnail" + file_extension
-                    image.thumbnail((image.width, 200))
-                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
-                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
-                    data["original_image"] = image_instance.original_image.url
-                    data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_201_CREATED)
-                elif user.tier.name == "Enterprise":
-                    image.thumbnail((image.width, 400))
-                    image.save("." + file_name + "_400px_thumbnail" + file_extension)
-                    data['400px_thumbnail'] = file_name + "_400px_thumbnail" + file_extension
-                    image.thumbnail((image.width, 200))
-                    image.save("." + file_name + "_200px_thumbnail" + file_extension)
-                    data['200px_thumbnail'] = file_name + "_200px_thumbnail" + file_extension
-                    data["original_image"] = image_instance.original_image.url
-                    data["expiring_link"] = ""  # todo: implement expiring link
-                    data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_201_CREATED)
-                elif user.tier.name not in ["Basic", "Premium", "Enterprise"]:
-                    image.thumbnail((image.width, user.tier.thumbnail_height))
-                    image.save("." + file_name + "_" + str(user.tier.thumbnail_height) + "px_thumbnail" + file_extension)
-                    data[str(user.tier.thumbnail_height) + 'px_thumbnail'] = file_name + \
-                                                                             "_" + \
-                                                                             str(user.tier.thumbnail_height) + \
-                                                                             "px_thumbnail" + \
-                                                                             file_extension
-                    if user.tier.presence_of_original_file_link:
-                        data["original_image"] = image_instance.original_image.url
-                    if user.tier.ability_to_fetch_expiring_link:
-                        pass  # todo: implement expiring link
-                    data["success"] = "Image uploaded successfully"
-                    return Response(data, status=status.HTTP_201_CREATED)
-            data["error"] = "Image upload failed"
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            image_absolute_path = image_instance.original_image.path
+            with PILImage.open(image_absolute_path) as image:
+                return self.options.get(user.tier.name, self.__default_processing)(image_instance, image, user)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
