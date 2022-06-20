@@ -1,5 +1,4 @@
 import os.path
-
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -45,7 +44,16 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __enterprise_processing(self, image_instance, image, *args):
+    def __enterprise_processing(self, image_instance, image, user, expiration_time, *args):
+        if int(expiration_time) < 300 or int(expiration_time) > 3000:
+            return Response({'error': 'Expiration time must be between 300 and 3000'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        # current_time = int(time.time())  # current time in seconds
+        # image_time = int(image_instance.date_added.timestamp())  # image time in seconds
+        # print(current_time - image_time)
+        # if current_time - image_time < int(expiration_time):
+        #     return Response({'error': 'Expiration time must be greater than time since image was added'},
+        #                     status=status.HTTP_400_BAD_REQUEST)
         file_name, file_extension = self.__file_processing(image, image_instance, 400)
         image.save(f".{file_name}_400px_thumbnail{file_extension}")
         file_name, file_extension = self.__file_processing(image, image_instance, 200)
@@ -53,7 +61,7 @@ class ImageView(APIView):
         data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
-                'expiring_link': "",
+                f'{expiration_time}s_expiring_link': "",
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -82,6 +90,7 @@ class ImageView(APIView):
         if serializer.is_valid():
             serializer.save()
             image_absolute_path = image_instance.original_image.path
+            expiration_time = request.data['expiration_time']  # expiring link live time
             with PILImage.open(image_absolute_path) as image:
-                return self.options.get(user.tier.name, self.__default_processing)(image_instance, image, user)
+                return self.options.get(user.tier.name, self.__default_processing)(image_instance, image, user, expiration_time)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
