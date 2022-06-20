@@ -30,7 +30,7 @@ class ExpiringImage(models.Model):
 class Image(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     original_image = models.ImageField(upload_to=image_upload_location)
-    date_added = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     expiration_time = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
