@@ -93,7 +93,12 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __enterprise_tier_processing(self, image_instance, image, user, live_time, *args):
+    def __enterprise_tier_processing(self, image_instance, image, request, *args):
+        try:
+            live_time = request.data['live_time']
+        except KeyError:
+            return Response({'error': 'Live time field is required'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
         if int(live_time) < 300 or int(live_time) > 3000:
             return Response({'error': 'Expiration time must be between 300 and 3000'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -112,7 +117,12 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __default_tier_processing(self, image_instance, image, user, live_time, *args):
+    def __default_tier_processing(self, image_instance, image, request, *args):
+        try:
+            live_time = request.data['live_time']
+        except KeyError:
+            return Response({'error': 'Live time field is required'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
         if int(live_time) < 300 or int(live_time) > 3000:
             return Response({'error': 'Expiration time must be between 300 and 3000'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -143,7 +153,6 @@ class ImageView(APIView):
         if serializer.is_valid():
             serializer.save()
             original_image_path = image_instance.original_image.path
-            live_time = request.data['live_time']  # expiring link live time
             with PILImage.open(original_image_path) as image:
-                return self.options.get(user.tier.name, self.__default_tier_processing)(image_instance, image, user, live_time)
+                return self.options.get(user.tier.name, self.__default_tier_processing)(image_instance, image, request)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
