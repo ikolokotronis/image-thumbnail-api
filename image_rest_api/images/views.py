@@ -18,7 +18,7 @@ from PIL import Image as PILImage
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def media_access(request, user_pk, image_pk, file_name):
+def image_access(request, user_pk, image_pk, file_name):
     """
     Image access management.
     """
@@ -38,7 +38,7 @@ def media_access(request, user_pk, image_pk, file_name):
 
 
 @api_view(['GET'])
-def expiring_media_access(request, expiring_image_pk, file_name):
+def expiring_image_access(request, expiring_image_pk, file_name):
     """
     Expiring image access management.
     """
