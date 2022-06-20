@@ -118,20 +118,20 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __default_tier_processing(self, image_instance, image, request, *args):
-        try:
-            live_time = request.data['live_time']
-        except KeyError:
-            return Response({'error': 'Live time field is required'}, status=status.HTTP_400_BAD_REQUEST)
         user = request.user
-        if int(live_time) < 300 or int(live_time) > 3000:
-            return Response({'error': 'Expiration time must be between 300 and 3000'},
-                            status=status.HTTP_400_BAD_REQUEST)
         file_name, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
         image.save(f".{file_name}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
         data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_name}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
         if user.tier.presence_of_original_file_link:
             data["original_image"] = image_instance.original_image.url
         if user.tier.ability_to_fetch_expiring_link:
+            try:
+                live_time = request.data['live_time']
+            except KeyError:
+                return Response({'error': 'Live time field is required'}, status=status.HTTP_400_BAD_REQUEST)
+            if int(live_time) < 300 or int(live_time) > 3000:
+                return Response({'error': 'Expiration time must be between 300 and 3000'},
+                                status=status.HTTP_400_BAD_REQUEST)
             expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
             expiring_image.image.save(f'{os.path.basename(file_name)}.jpg',
                                       image_instance.original_image)
