@@ -13,7 +13,7 @@ def expiring_image_upload_location(instance, filename, **kwargs):
     """
     Location for the expiring image file
     """
-    file_path = f'expiring_images/{instance.id}/{filename}'
+    file_path = f'expiring_images/{filename}'
     return file_path
 
 
@@ -34,15 +34,3 @@ class Image(models.Model):
 
     def __str__(self):
         return self.original_image.url
-
-    def save(self, *args, **kwargs):
-        """
-        Override save method to get the pk of the image instance
-        """
-        if self.pk is None:
-            saved_original_image = self.original_image
-            self.original_image = None
-            super(Image, self).save(*args, **kwargs)
-            self.original_image = saved_original_image
-
-        super(Image, self).save(*args, **kwargs)
