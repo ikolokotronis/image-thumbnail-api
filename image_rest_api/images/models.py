@@ -31,7 +31,6 @@ class Image(models.Model):
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     original_image = models.ImageField(upload_to=image_upload_location)
     created_at = models.DateTimeField(auto_now_add=True)
-    expiration_time = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.original_image.url
