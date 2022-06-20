@@ -76,19 +76,19 @@ class ImageView(APIView):
         return file_name, file_extension
 
     def __basic_tier_processing(self, image_instance, image, *args):
-        file_name, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_name}_200px_thumbnail{file_extension}")
-        data = {'200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+        file_name_url, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name_url}_200px_thumbnail{file_extension}")
+        data = {'200px_thumbnail': f'{file_name_url}_200px_thumbnail{file_extension}',
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __premium_tier_processing(self, image_instance, image, *args):
-        file_name, file_extension = self.__file_processing(image, image_instance, 400)
-        image.save(f".{file_name}_400px_thumbnail{file_extension}")
-        file_name, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_name}_200px_thumbnail{file_extension}")
-        data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
-                '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+        file_name_url, file_extension = self.__file_processing(image, image_instance, 400)
+        image.save(f".{file_name_url}_400px_thumbnail{file_extension}")
+        file_name_url, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name_url}_200px_thumbnail{file_extension}")
+        data = {'400px_thumbnail': f'{file_name_url}_400px_thumbnail{file_extension}',
+                '200px_thumbnail': f'{file_name_url}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
@@ -106,12 +106,12 @@ class ImageView(APIView):
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
         expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
         expiring_image.image.save(f'{file_name}.jpg', image_instance.original_image)
-        file_name, file_extension = self.__file_processing(image, image_instance, 400)
-        image.save(f".{file_name}_400px_thumbnail{file_extension}")
-        file_name, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_name}_200px_thumbnail{file_extension}")
-        data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
-                '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
+        file_name_url, file_extension = self.__file_processing(image, image_instance, 400)
+        image.save(f".{file_name_url}_400px_thumbnail{file_extension}")
+        file_name_url, file_extension = self.__file_processing(image, image_instance, 200)
+        image.save(f".{file_name_url}_200px_thumbnail{file_extension}")
+        data = {'400px_thumbnail': f'{file_name_url}_400px_thumbnail{file_extension}',
+                '200px_thumbnail': f'{file_name_url}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
                 f'{live_time}s_expiring_link': expiring_image.image.url,
                 'success': 'Image uploaded successfully'}
@@ -119,9 +119,9 @@ class ImageView(APIView):
 
     def __default_tier_processing(self, image_instance, image, request, *args):
         user = request.user
-        file_name, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
-        image.save(f".{file_name}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
-        data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_name}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
+        file_name_url, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
+        image.save(f".{file_name_url}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
+        data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_name_url}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
         if user.tier.presence_of_original_file_link:
             data["original_image"] = image_instance.original_image.url
         if user.tier.ability_to_fetch_expiring_link:
@@ -133,7 +133,7 @@ class ImageView(APIView):
                 return Response({'error': 'Expiration time must be between 300 and 3000'},
                                 status=status.HTTP_400_BAD_REQUEST)
             expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
-            expiring_image.image.save(f'{os.path.basename(file_name)}.jpg',
+            expiring_image.image.save(f'{os.path.basename(file_name_url)}.jpg',
                                       image_instance.original_image)
             data[f'{live_time}s_expiring_link'] = expiring_image.image.url
         data["success"] = "Image uploaded successfully"

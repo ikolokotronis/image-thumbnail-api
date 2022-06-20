@@ -5,7 +5,7 @@ def image_upload_location(instance, filename, **kwargs):
     """
     Location for the image file
     """
-    file_path = f'{instance.user.id}/images/{instance.id}/{filename}'
+    file_path = f'{instance.user.id}/images/{filename}'
     return file_path
 
 
