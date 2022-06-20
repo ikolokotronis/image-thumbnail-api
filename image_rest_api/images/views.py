@@ -1,4 +1,4 @@
-import os.path
+import os
 import time
 
 from django.http import HttpResponse
@@ -53,8 +53,8 @@ def expiring_media_access(request, expiring_image_pk, file_name):
         return Response({'error': 'Image has expired'}, status=status.HTTP_404_NOT_FOUND)
     file_path = os.path.join(os.path.dirname(image.image.path), file_name)
     if os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            image_data = f.read()
+        with open(file_path, 'rb') as img:
+            image_data = img.read()
             return HttpResponse(image_data, content_type='image/jpeg')
     return Response({'error': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -93,14 +93,14 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __enterprise_tier_processing(self, image_instance, image, user, expiration_time, *args):
-        if int(expiration_time) < 300 or int(expiration_time) > 3000:
+    def __enterprise_tier_processing(self, image_instance, image, user, live_time, *args):
+        if int(live_time) < 300 or int(live_time) > 3000:
             return Response({'error': 'Expiration time must be between 300 and 3000'},
                             status=status.HTTP_400_BAD_REQUEST)
         original_image_url = image_instance.original_image.url
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
-        expiring_image = ExpiringImage.objects.create(user=user, live_time=expiration_time)
-        expiring_image.image.save(f'{file_name}_{expiring_image.live_time}s_expiring_image.jpg', image_instance.original_image)
+        expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
+        expiring_image.image.save(f'{file_name}.jpg', image_instance.original_image)
         file_name, file_extension = self.__file_processing(image, image_instance, 400)
         image.save(f".{file_name}_400px_thumbnail{file_extension}")
         file_name, file_extension = self.__file_processing(image, image_instance, 200)
@@ -108,18 +108,24 @@ class ImageView(APIView):
         data = {'400px_thumbnail': f'{file_name}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_name}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
-                f'{expiration_time}s_expiring_link': expiring_image.image.url,
+                f'{live_time}s_expiring_link': expiring_image.image.url,
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __default_tier_processing(self, image_instance, image, user):
+    def __default_tier_processing(self, image_instance, image, user, live_time, *args):
+        if int(live_time) < 300 or int(live_time) > 3000:
+            return Response({'error': 'Expiration time must be between 300 and 3000'},
+                            status=status.HTTP_400_BAD_REQUEST)
         file_name, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
         image.save(f".{file_name}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
         data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_name}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
         if user.tier.presence_of_original_file_link:
             data["original_image"] = image_instance.original_image.url
         if user.tier.ability_to_fetch_expiring_link:
-            pass  # todo: implement expiring link
+            expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
+            expiring_image.image.save(f'{os.path.basename(file_name)}.jpg',
+                                      image_instance.original_image)
+            data[f'{live_time}s_expiring_link'] = expiring_image.image.url
         data["success"] = "Image uploaded successfully"
         return Response(data, status=status.HTTP_201_CREATED)
 
@@ -137,7 +143,7 @@ class ImageView(APIView):
         if serializer.is_valid():
             serializer.save()
             original_image_path = image_instance.original_image.path
-            expiration_time = request.data['expiration_time']  # expiring link live time
+            live_time = request.data['live_time']  # expiring link live time
             with PILImage.open(original_image_path) as image:
-                return self.options.get(user.tier.name, self.__default_tier_processing)(image_instance, image, user, expiration_time)
+                return self.options.get(user.tier.name, self.__default_tier_processing)(image_instance, image, user, live_time)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
