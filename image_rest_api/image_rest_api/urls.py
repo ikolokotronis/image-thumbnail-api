@@ -18,9 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 
+from images.views import media_access, expiring_media_access
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('images/', include('images.urls')),
+    path('media/<int:user_pk>/images/<int:image_pk>/<str:file_name>', media_access, name='media-access-view'),
+    path('media/expiring_images/<int:expiring_image_pk>/<str:file_name>', expiring_media_access, name='expiring-media-access-view'),
 ]
 
 if settings.DEBUG:
