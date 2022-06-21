@@ -1,5 +1,6 @@
 import os
 import time
+from os.path import splitext
 
 from django.http import HttpResponse
 from rest_framework import status
@@ -129,7 +130,7 @@ class ImageView(APIView):
         expiring_image.image.save(f'{file_name}{file_extension}', image_instance.original_image)
         data = {'400px_thumbnail': f'{file_url}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
-                'original_image': image_instance.original_image.url,
+                'original_image': original_image_url,
                 f'{live_time}s_expiring_link': expiring_image.image.url,
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
@@ -177,6 +178,10 @@ class ImageView(APIView):
         serializer = ImageSerializer(image_instance, data=request.data)
         if serializer.is_valid():
             serializer.save()
+            image_format = splitext(image_instance.original_image.url)[1]
+            if image_format not in ['.jpg', '.jpeg', '.png']:
+                image_instance.delete()
+                return Response({'error': 'Image format not supported'}, status=status.HTTP_400_BAD_REQUEST)
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
                 # Call the appropriate tier processing method, by checking user's tier.
