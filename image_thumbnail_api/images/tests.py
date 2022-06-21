@@ -87,3 +87,17 @@ class ImageTests(APITestCase):
         response = self.client.post(url, data, format='multipart')  # sending string instead of file
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Image.objects.count(), 2)
+
+    def test_upload_image_with_invalid_image_type(self):
+        """
+        Test by sending image with invalid type (not jpg/png)
+        """
+        token = Token.objects.get(user__username='test')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        url = reverse('image-view')
+        data = {'original_image': SimpleUploadedFile(name='bmp-test.bmp',
+                                                     content=open('images/test_images/bmp-test.bmp', 'rb').read(),
+                                                     content_type='image/bmp')}
+        response = self.client.post(url, data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Image.objects.count(), 2)
