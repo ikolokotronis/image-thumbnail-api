@@ -37,6 +37,18 @@ class ImageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Image.objects.count(), 2)  # 2 images from setUp that are owned by test user
 
+    def test_get_one_image(self):
+        """
+        Test that one image is returned
+        """
+        token = Token.objects.get(user__username='test')
+        user = User.objects.get(username='test')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        url = f'{Image.objects.filter(user=user).first().original_image.url}'  # get first image from setUp
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(Image.objects.count(), 2)
+
     def test_upload_image(self):
         """
         Test that image is uploaded stored in database
@@ -52,7 +64,7 @@ class ImageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Image.objects.count(), 3)  # 2 images from setUp and 1 new one
 
-    def test_upload_image_without_original_image(self):
+    def test_upload_image_without_data(self):
         """
         Test that image is not uploaded if original_image is not provided
         """
@@ -64,22 +76,14 @@ class ImageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Image.objects.count(), 2)
 
-    def test_upload_image_with_invalid_original_image_value(self):
+    def test_upload_image_with_invalid_image_value(self):
         """
         Test that image is not uploaded if original_image value is not an image
         """
         token = Token.objects.get(user__username='test')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         url = reverse('image-view')
-        data = {'original_image': 'invalid'}
+        data = {'original_image': 'invalid_value'}
         response = self.client.post(url, data, format='multipart')  # sending string instead of file
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Image.objects.count(), 2)
-
-    def test_token_is_required_for_listing_images(self):
-        """
-        Test that token is required for listing images
-        """
-        url = reverse('image-view')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
