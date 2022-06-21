@@ -60,7 +60,7 @@ def expiring_image_access(request, file_name):
         image.delete()
         return Response({'error': 'Image has expired'}, status=status.HTTP_404_NOT_FOUND)
     file_path = os.path.join(os.path.dirname(image.image.path), file_name)
-    if os.path.exists(file_path):
+    if os.path.exists(file_path):  # if image exists
         with open(file_path, 'rb') as img:
             image_data = img.read()
             return HttpResponse(image_data, content_type='image/jpeg')
@@ -86,7 +86,7 @@ class ImageView(APIView):
         image.thumbnail((image.width, size))
         return file_url, file_extension
 
-    def __basic_tier_processing(self, image_instance, image, *args):
+    def __basic_tier_processing(self, request, image_instance, image):
         """
         Basic tier processing.
         """
@@ -96,7 +96,7 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __premium_tier_processing(self, image_instance, image, *args):
+    def __premium_tier_processing(self, request, image_instance, image):
         """
         Premium tier processing.
         """
@@ -110,7 +110,7 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __enterprise_tier_processing(self, image_instance, image, request, *args):
+    def __enterprise_tier_processing(self, request, image_instance, image):
         """
         Enterprise tier processing.
         """
@@ -137,7 +137,7 @@ class ImageView(APIView):
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __default_tier_processing(self, image_instance, image, request, *args):
+    def __default_tier_processing(self, request, image_instance, image):
         """
         Default tier processing. (for arbitrary tiers)
         """
@@ -184,5 +184,5 @@ class ImageView(APIView):
             serializer.save()
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
-                return self.options.get(user.tier.name, self.__default_tier_processing)(image_instance, image, request)
+                return self.options.get(user.tier.name, self.__default_tier_processing)(request, image_instance, image)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
