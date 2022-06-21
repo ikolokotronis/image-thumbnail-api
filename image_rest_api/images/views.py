@@ -85,7 +85,7 @@ class ImageView(APIView):
         original_image_url = image_instance.original_image.url
         file_url, file_extension = os.path.splitext(original_image_url)
         image.thumbnail((image.width, size))
-        image.save(f".{file_url}_{request.user.tier.thumbnail_height}px_thumbnail{file_extension}")
+        image.save(f".{file_url}_{size}px_thumbnail{file_extension}")
         return file_url, file_extension
 
     def __basic_tier_processing(self, request, image_instance, image):

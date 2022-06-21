@@ -64,7 +64,7 @@ class ImageTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Image.objects.count(), 2)
 
-    def test_upload_image_with_invalid_original_image(self):
+    def test_upload_image_with_invalid_original_image_value(self):
         """
         Test that image is not uploaded if original_image value is not an image
         """
