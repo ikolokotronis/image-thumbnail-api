@@ -123,10 +123,10 @@ class ImageView(APIView):
                             status=status.HTTP_400_BAD_REQUEST)
         original_image_url = image_instance.original_image.url
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
-        expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
-        expiring_image.image.save(f'{file_name}.jpg', image_instance.original_image)
         file_url, file_extension = self.__file_processing(request, image, image_instance, 400)
         file_url, file_extension = self.__file_processing(request, image, image_instance, 200)
+        expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
+        expiring_image.image.save(f'{file_name}{file_extension}', image_instance.original_image)
         data = {'400px_thumbnail': f'{file_url}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
@@ -153,8 +153,7 @@ class ImageView(APIView):
                 return Response({'error': 'Live time must be between 300 and 3000 seconds'},
                                 status=status.HTTP_400_BAD_REQUEST)
             expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
-            expiring_image.image.save(f'{file_name}.jpg',
-                                      image_instance.original_image)
+            expiring_image.image.save(f'{file_name}{file_extension}', image_instance.original_image)
             data[f'{live_time}s_expiring_link'] = expiring_image.image.url
         data["success"] = "Image uploaded successfully"
         return Response(data, status=status.HTTP_201_CREATED)
