@@ -29,7 +29,7 @@ class ImageTests(APITestCase):
         url = reverse('image-view')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)  # 2 images from setUp that are owned by test user
 
     def test_upload_image(self):
         token = Token.objects.get(user__username='test')
@@ -41,5 +41,27 @@ class ImageTests(APITestCase):
         data = {'original_image': image}
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Image.objects.count(), 3)
+        self.assertEqual(Image.objects.count(), 3)  # 2 images from setUp and 1 new one
 
+    def test_upload_image_without_original_image(self):
+        token = Token.objects.get(user__username='test')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        url = reverse('image-view')
+        data = {}
+        response = self.client.post(url, data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Image.objects.count(), 2)
+
+    def test_upload_image_with_invalid_original_image(self):
+        token = Token.objects.get(user__username='test')
+        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        url = reverse('image-view')
+        data = {'original_image': 'invalid'}
+        response = self.client.post(url, data, format='multipart')  # sending string instead of file
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(Image.objects.count(), 2)
+
+    def test_token_is_required_for_listing_images(self):
+        url = reverse('image-view')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
