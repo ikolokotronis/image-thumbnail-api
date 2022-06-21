@@ -21,6 +21,7 @@ from PIL import Image as PILImage
 def image_access(request, user_pk, file_name):
     """
     Image access management.
+    Only the owner of the image can access the image if it exists.
     """
     user = request.user
     if user.pk != user_pk:
@@ -47,6 +48,7 @@ def image_access(request, user_pk, file_name):
 def expiring_image_access(request, file_name):
     """
     Expiring image access management.
+    Anyone can access the image if it exists and is not expired.
     """
     try:
         image = ExpiringImage.objects.get(image=f'expiring_images/{file_name}')
