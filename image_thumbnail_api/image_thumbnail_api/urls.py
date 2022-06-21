@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('images/', include('images.urls')),
     path('media/<int:user_pk>/images/<str:file_name>', image_access, name='image-access'),
-    path('media/expiring_images/<str:file_name>', expiring_image_access, name='expiring-image-access'),
+    path('media/expiring-images/<str:file_name>', expiring_image_access, name='expiring-image-access'),
 ]
 
 if settings.DEBUG:

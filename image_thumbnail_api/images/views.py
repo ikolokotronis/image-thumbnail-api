@@ -52,7 +52,7 @@ def expiring_image_access(request, file_name):
     Anyone can access the image if it exists and is not expired.
     """
     try:
-        image = ExpiringImage.objects.get(image=f'expiring_images/{file_name}')
+        image = ExpiringImage.objects.get(image=f'expiring-images/{file_name}')
     except ObjectDoesNotExist:
         return Response({'error': 'Image does not exist'}, status=status.HTTP_404_NOT_FOUND)
     current_time_in_seconds = int(time.time())  # current time in seconds

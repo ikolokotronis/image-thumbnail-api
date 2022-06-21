@@ -13,7 +13,7 @@ def expiring_image_upload_location(instance, filename, **kwargs):
     """
     Location for the expiring image file
     """
-    file_path = f'expiring_images/{filename}'
+    file_path = f'expiring-images/{filename}'
     return file_path
 
 
