@@ -76,12 +76,18 @@ class ImageView(APIView):
                         'Enterprise': self.__enterprise_tier_processing}
 
     def __file_processing(self, image, image_instance, size):
+        """
+        Processes image and returns file url and file extension.
+        """
         original_image_url = image_instance.original_image.url
         file_url, file_extension = os.path.splitext(original_image_url)
         image.thumbnail((image.width, size))
         return file_url, file_extension
 
     def __basic_tier_processing(self, image_instance, image, *args):
+        """
+        Basic tier processing.
+        """
         file_url, file_extension = self.__file_processing(image, image_instance, 200)
         image.save(f".{file_url}_200px_thumbnail{file_extension}")
         data = {'200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
@@ -89,6 +95,9 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __premium_tier_processing(self, image_instance, image, *args):
+        """
+        Premium tier processing.
+        """
         file_url, file_extension = self.__file_processing(image, image_instance, 400)
         image.save(f".{file_url}_400px_thumbnail{file_extension}")
         file_url, file_extension = self.__file_processing(image, image_instance, 200)
@@ -100,6 +109,9 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __enterprise_tier_processing(self, image_instance, image, request, *args):
+        """
+        Enterprise tier processing.
+        """
         try:
             live_time = request.data['live_time']
         except KeyError:
@@ -124,6 +136,9 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def __default_tier_processing(self, image_instance, image, request, *args):
+        """
+        Default tier processing. (for arbitrary tiers)
+        """
         user = request.user
         file_url, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
         file_name = os.path.basename(file_url)
@@ -147,6 +162,9 @@ class ImageView(APIView):
         return Response(data, status=status.HTTP_201_CREATED)
 
     def get(self, request):
+        """
+        Lists all images.
+        """
         images = Image.objects.filter(user_id=request.user.id)
         if images:
             serializer = ImageSerializer(images, many=True)
@@ -154,6 +172,9 @@ class ImageView(APIView):
         return Response({'No images found'}, status=status.HTTP_404_NOT_FOUND)
 
     def post(self, request):
+        """
+        Calls the appropriate tier processing method and returns the response.
+        """
         user = request.user
         image_instance = Image(user=user)
         serializer = ImageSerializer(image_instance, data=request.data)

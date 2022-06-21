@@ -10,6 +10,9 @@ from users.models import User, Tier
 
 class ImageTests(APITestCase):
     def setUp(self):
+        """
+        Create a user with basic tier and create two images for that user
+        """
         tier = Tier.objects.create(name='Basic', thumbnail_height=100,
                                    presence_of_original_file_link=True,
                                    ability_to_fetch_expiring_link=False)
@@ -24,6 +27,9 @@ class ImageTests(APITestCase):
         Image.objects.create(original_image=image2, user=user)
 
     def test_get_all_images(self):
+        """
+        Test that all images are returned
+        """
         token = Token.objects.get(user__username='test')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         url = reverse('image-view')
@@ -32,6 +38,9 @@ class ImageTests(APITestCase):
         self.assertEqual(Image.objects.count(), 2)  # 2 images from setUp that are owned by test user
 
     def test_upload_image(self):
+        """
+        Test that image is uploaded stored in database
+        """
         token = Token.objects.get(user__username='test')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         url = reverse('image-view')
@@ -44,6 +53,9 @@ class ImageTests(APITestCase):
         self.assertEqual(Image.objects.count(), 3)  # 2 images from setUp and 1 new one
 
     def test_upload_image_without_original_image(self):
+        """
+        Test that image is not uploaded if original_image is not provided
+        """
         token = Token.objects.get(user__username='test')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         url = reverse('image-view')
@@ -53,6 +65,9 @@ class ImageTests(APITestCase):
         self.assertEqual(Image.objects.count(), 2)
 
     def test_upload_image_with_invalid_original_image(self):
+        """
+        Test that image is not uploaded if original_image value is not an image
+        """
         token = Token.objects.get(user__username='test')
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         url = reverse('image-view')
@@ -62,6 +77,9 @@ class ImageTests(APITestCase):
         self.assertEqual(Image.objects.count(), 2)
 
     def test_token_is_required_for_listing_images(self):
+        """
+        Test that token is required for listing images
+        """
         url = reverse('image-view')
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
