@@ -117,15 +117,14 @@ class ImageView(APIView):
             live_time = request.data['live_time']
         except KeyError:
             return Response({'error': 'No live_time field'}, status=status.HTTP_400_BAD_REQUEST)
-        user = request.user
         if int(live_time) < 300 or int(live_time) > 3000:
             return Response({'error': 'Live time must be between 300 and 3000 seconds'},
                             status=status.HTTP_400_BAD_REQUEST)
         original_image_url = image_instance.original_image.url
-        file_name = os.path.splitext(os.path.basename(original_image_url))[0]
         file_url, file_extension = self.__file_processing(request, image, image_instance, 400)
         file_url, file_extension = self.__file_processing(request, image, image_instance, 200)
-        expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
+        file_name = os.path.splitext(os.path.basename(original_image_url))[0]
+        expiring_image = ExpiringImage.objects.create(user=request.user, live_time=live_time)
         expiring_image.image.save(f'{file_name}{file_extension}', image_instance.original_image)
         data = {'400px_thumbnail': f'{file_url}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
