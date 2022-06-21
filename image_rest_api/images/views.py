@@ -31,13 +31,14 @@ def image_access(request, user_pk, file_name):
         image = Image.objects.get(original_image=f'{user.pk}/images/{file_name}')
         file_path = os.path.join(os.path.dirname(image.original_image.path), file_name)
     except ObjectDoesNotExist:
+        #  If image does not exist, check if it is some other image (e.g. a thumbnail) in the same directory.
         images_dir = os.listdir(os.path.join(f'{os.getcwd()}/media/{user.id}/images/'))
         for img_file in images_dir:
             if img_file == file_name:
                 image = img_file
                 file_path = os.path.join(f'{os.getcwd()}/media/{user.id}/images/{img_file}')
                 break
-    if os.path.exists(file_path):
+    if os.path.exists(file_path):  # If image exists, return it as a http response.
         with open(file_path, 'rb') as f:
             image_data = f.read()
             return HttpResponse(image_data, content_type='image/jpeg')
@@ -77,21 +78,21 @@ class ImageView(APIView):
                         'Premium': self.__premium_tier_processing,
                         'Enterprise': self.__enterprise_tier_processing}
 
-    def __file_processing(self, image, image_instance, size):
+    def __file_processing(self, request, image, image_instance, size):
         """
         Processes image and returns file url and file extension.
         """
         original_image_url = image_instance.original_image.url
         file_url, file_extension = os.path.splitext(original_image_url)
         image.thumbnail((image.width, size))
+        image.save(f".{file_url}_{request.user.tier.thumbnail_height}px_thumbnail{file_extension}")
         return file_url, file_extension
 
     def __basic_tier_processing(self, request, image_instance, image):
         """
         Basic tier processing.
         """
-        file_url, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_url}_200px_thumbnail{file_extension}")
+        file_url, file_extension = self.__file_processing(request, image, image_instance, 200)
         data = {'200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
                 'success': 'Image uploaded successfully'}
         return Response(data, status=status.HTTP_201_CREATED)
@@ -100,10 +101,8 @@ class ImageView(APIView):
         """
         Premium tier processing.
         """
-        file_url, file_extension = self.__file_processing(image, image_instance, 400)
-        image.save(f".{file_url}_400px_thumbnail{file_extension}")
-        file_url, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_url}_200px_thumbnail{file_extension}")
+        file_url, file_extension = self.__file_processing(request, image, image_instance, 400)
+        file_url, file_extension = self.__file_processing(request, image, image_instance, 200)
         data = {'400px_thumbnail': f'{file_url}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
@@ -126,10 +125,8 @@ class ImageView(APIView):
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
         expiring_image = ExpiringImage.objects.create(user=user, live_time=live_time)
         expiring_image.image.save(f'{file_name}.jpg', image_instance.original_image)
-        file_url, file_extension = self.__file_processing(image, image_instance, 400)
-        image.save(f".{file_url}_400px_thumbnail{file_extension}")
-        file_url, file_extension = self.__file_processing(image, image_instance, 200)
-        image.save(f".{file_url}_200px_thumbnail{file_extension}")
+        file_url, file_extension = self.__file_processing(request, image, image_instance, 400)
+        file_url, file_extension = self.__file_processing(request, image, image_instance, 200)
         data = {'400px_thumbnail': f'{file_url}_400px_thumbnail{file_extension}',
                 '200px_thumbnail': f'{file_url}_200px_thumbnail{file_extension}',
                 'original_image': image_instance.original_image.url,
@@ -142,9 +139,8 @@ class ImageView(APIView):
         Default tier processing. (for arbitrary tiers)
         """
         user = request.user
-        file_url, file_extension = self.__file_processing(image, image_instance, user.tier.thumbnail_height)
+        file_url, file_extension = self.__file_processing(request, image, image_instance, user.tier.thumbnail_height)
         file_name = os.path.basename(file_url)
-        image.save(f".{file_url}_{user.tier.thumbnail_height}px_thumbnail{file_extension}")
         data = {f'{str(user.tier.thumbnail_height)}px_thumbnail': f'{file_url}_{str(user.tier.thumbnail_height)}px_thumbnail{file_extension}'}
         if user.tier.presence_of_original_file_link:
             data["original_image"] = image_instance.original_image.url
@@ -184,5 +180,7 @@ class ImageView(APIView):
             serializer.save()
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
+                # Call the appropriate tier processing method, by checking the user's tier.
+                # If the user's tier is not in the list of tiers, call the default tier processing method.
                 return self.options.get(user.tier.name, self.__default_tier_processing)(request, image_instance, image)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
