@@ -25,11 +25,17 @@ def image_access(request, user_pk, file_name):
     user = request.user
     if user.pk != user_pk:
         return Response({'error': 'You do not have access to this image'}, status=status.HTTP_403_FORBIDDEN)
+    file_path = ''
     try:
         image = Image.objects.get(original_image=f'{user.pk}/images/{file_name}')
+        file_path = os.path.join(os.path.dirname(image.original_image.path), file_name)
     except ObjectDoesNotExist:
-        return Response({'error': 'Image does not exist'}, status=status.HTTP_404_NOT_FOUND)
-    file_path = os.path.join(os.path.dirname(image.original_image.path), file_name)
+        images_dir = os.listdir(os.path.join(f'{os.getcwd()}/media/{user.id}/images/'))
+        for img_file in images_dir:
+            if img_file == file_name:
+                image = img_file
+                file_path = os.path.join(f'{os.getcwd()}/media/{user.id}/images/{img_file}')
+                break
     if os.path.exists(file_path):
         with open(file_path, 'rb') as f:
             image_data = f.read()
