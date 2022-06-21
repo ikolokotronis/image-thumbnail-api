@@ -179,7 +179,6 @@ class ImageView(APIView):
             serializer.save()
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
-                # Call the appropriate tier processing method, by checking the user's tier.
-                # If the user's tier is not in the list of tiers, call the default tier processing method.
+                # Call the appropriate tier processing method, by checking user's tier.
                 return self.options.get(user.tier.name, self.__default_tier_processing)(request, image_instance, image)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
