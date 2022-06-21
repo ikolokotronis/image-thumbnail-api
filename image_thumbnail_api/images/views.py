@@ -1,6 +1,5 @@
 import os
 import time
-from os.path import splitext
 
 from django.http import HttpResponse
 from rest_framework import status
@@ -178,7 +177,7 @@ class ImageView(APIView):
         serializer = ImageSerializer(image_instance, data=request.data)
         if serializer.is_valid():
             serializer.save()
-            image_format = splitext(image_instance.original_image.url)[1]
+            image_format = os.path.splitext(image_instance.original_image.url)[1]
             if image_format not in ['.jpg', '.jpeg', '.png']:
                 image_instance.delete()
                 return Response({'error': 'Image format not supported'}, status=status.HTTP_400_BAD_REQUEST)

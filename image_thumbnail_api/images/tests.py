@@ -101,3 +101,4 @@ class ImageTests(APITestCase):
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(response.data['error'], 'Image format not supported')
