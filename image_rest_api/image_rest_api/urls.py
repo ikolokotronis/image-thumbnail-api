@@ -23,8 +23,8 @@ from images.views import image_access, expiring_image_access
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('images/', include('images.urls')),
-    path('media/<int:user_pk>/images/<int:image_pk>/<str:file_name>', image_access, name='image-access'),
-    path('media/expiring_images/<int:expiring_image_pk>/<str:file_name>', expiring_image_access, name='expiring-image-access'),
+    path('media/<int:user_pk>/images/<str:file_name>', image_access, name='image-access'),
+    path('media/expiring_images/<str:file_name>', expiring_image_access, name='expiring-image-access'),
 ]
 
 if settings.DEBUG:
