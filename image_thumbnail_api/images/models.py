@@ -18,6 +18,9 @@ def expiring_image_upload_location(instance, filename, **kwargs):
 
 
 class ExpiringImage(models.Model):
+    """
+    This model is used to store images that are only accessible for a limited time, after which they are deleted.
+    """
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=expiring_image_upload_location)
     live_time = models.IntegerField()
@@ -28,6 +31,9 @@ class ExpiringImage(models.Model):
 
 
 class Image(models.Model):
+    """
+    This model is used to store images that are accessible for the user.
+    """
     user = models.ForeignKey('users.User', on_delete=models.CASCADE)
     original_image = models.ImageField(upload_to=image_upload_location)
     created_at = models.DateTimeField(auto_now_add=True)
