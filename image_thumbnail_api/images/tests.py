@@ -13,7 +13,7 @@ class ImageTests(APITestCase):
         """
         Create a user with basic tier and create two images for that user
         """
-        tier = Tier.objects.create(name='Basic', thumbnail_height=100,
+        tier = Tier.objects.create(name='Premium',
                                    presence_of_original_file_link=True,
                                    ability_to_fetch_expiring_link=False)
         user = User.objects.create_user(username='test', password='test', tier=tier)

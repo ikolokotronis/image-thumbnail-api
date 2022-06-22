@@ -61,7 +61,7 @@ def expiring_image_access(request, file_name):
         image.delete()
         return Response({'error': 'Image has expired'}, status=status.HTTP_404_NOT_FOUND)
     file_path = os.path.join(os.path.dirname(image.image.path), file_name)
-    if os.path.exists(file_path):  # if image exists
+    if os.path.exists(file_path):  # If image exists, return it as a http response.
         with open(file_path, 'rb') as img:
             image_data = img.read()
             return HttpResponse(image_data, content_type='image/jpeg')
