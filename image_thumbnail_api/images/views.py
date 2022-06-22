@@ -31,7 +31,7 @@ def image_access(request, user_pk, file_name):
         image = Image.objects.get(original_image=f'{user.pk}/images/{file_name}')
         file_path = os.path.join(os.path.dirname(image.original_image.path), file_name)
     except ObjectDoesNotExist:
-        #  If image does not exist, check if it is some other image (e.g. a thumbnail) in the same directory.
+        #  If image does not exist, check if it is some other image (e.g. a thumbnail).
         images_dir = os.listdir(os.path.join(f'{os.getcwd()}/media/{user.id}/images/'))
         for img_file in images_dir:
             if img_file == file_name:
