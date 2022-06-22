@@ -1,1 +1,1 @@
-web: gunicorn image-thumbnail-api.wsgi
+web: gunicorn image_thumbnail_api.wsgi
