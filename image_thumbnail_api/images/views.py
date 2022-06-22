@@ -49,7 +49,7 @@ class ImageAccess(APIView):
 class ExpiringImageAccess(APIView):
     """
     Expiring image access management.
-    Only the owner of the image can access the image if it exists.
+    Anyone can access the image can access the image if it exists.
     """
 
     def get(self, request, user_pk, file_name):
