@@ -62,7 +62,9 @@ class ImageTests(APITestCase):
         data = {'original_image': image}
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(response.data), 4)  # 4 fields in response
         self.assertEqual(Image.objects.count(), 3)  # 2 images from setUp and 1 new one
+        self.assertEqual(response.data['original_image'], f'{Image.objects.last().original_image.url}')
 
     def test_upload_image_without_data(self):
         """
