@@ -51,8 +51,6 @@ class ExpiringImageAccess(APIView):
     Expiring image access management.
     Only the owner of the image can access the image if it exists.
     """
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, user_pk, file_name):
         try:
