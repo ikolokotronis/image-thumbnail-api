@@ -36,6 +36,7 @@ class ImageTests(APITestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(Image.objects.count(), 2)  # 2 images from setUp that are owned by test user
+        self.assertEqual(len(response.data), 2)
 
     def test_get_one_image(self):
         """
@@ -47,7 +48,6 @@ class ImageTests(APITestCase):
         url = f'{Image.objects.filter(user=user).first().original_image.url}'  # get first image from setUp
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Image.objects.count(), 2)
 
     def test_upload_image(self):
         """
@@ -74,7 +74,7 @@ class ImageTests(APITestCase):
         data = {}
         response = self.client.post(url, data, format='multipart')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)  # still just 2 images from setUp
 
     def test_upload_image_with_invalid_image_value(self):
         """
@@ -86,7 +86,7 @@ class ImageTests(APITestCase):
         data = {'original_image': 'invalid_value'}
         response = self.client.post(url, data, format='multipart')  # sending string instead of file
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Image.objects.count(), 2)
+        self.assertEqual(Image.objects.count(), 2)  # still just 2 images from setUp
 
     def test_upload_image_with_invalid_image_type(self):
         """
@@ -99,6 +99,6 @@ class ImageTests(APITestCase):
                                                      content=open('images/test_images/bmp-test.bmp', 'rb').read(),
                                                      content_type='image/bmp')}
         response = self.client.post(url, data, format='multipart')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)  # sending bmp file
         self.assertEqual(Image.objects.count(), 2)
         self.assertEqual(response.data['error'], 'Image format not supported')
