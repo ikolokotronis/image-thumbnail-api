@@ -11,7 +11,7 @@ from users.models import User, Tier
 class ImageTests(APITestCase):
     def setUp(self):
         """
-        Create a user with basic tier and create two images for that user
+        Create a premium user and 2 images for that user
         """
         tier = Tier.objects.create(name='Premium',
                                    presence_of_original_file_link=True,

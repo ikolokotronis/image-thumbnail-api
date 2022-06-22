@@ -80,7 +80,7 @@ class ImageView(APIView):
 
     def __file_processing(self, request, image, image_instance, size):
         """
-        Processes image and returns file url and file extension.
+        Processes image, returns file url and file extension.
         """
         original_image_url = image_instance.original_image.url
         file_url, file_extension = os.path.splitext(original_image_url)
