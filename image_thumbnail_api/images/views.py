@@ -4,7 +4,6 @@ import time
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.decorators import authentication_classes, permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,51 +22,71 @@ class ImageAccess(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, user_pk, file_name):
+    def __authorize_user(self, request, user_pk):
         user = request.user
-        if user.pk != user_pk:
-            return Response({'error': 'You do not have access to this image'}, status=status.HTTP_403_FORBIDDEN)
-        file_path = ''
+        if user.pk == user_pk:
+            return user
+
+    def __get_file_path(self, request, file_name):
+        user = request.user
         try:
-            image = Image.objects.get(original_image=f'{user.pk}/images/{file_name}')
+            image = Image.objects.get(original_image=f'{user.id}/images/{file_name}')
             file_path = os.path.join(os.path.dirname(image.original_image.path), file_name)
         except ObjectDoesNotExist:
-            #  If image does not exist, check if it is some other image (e.g. a thumbnail).
-            images_dir = os.listdir(os.path.join(f'{os.getcwd()}/media/{user.id}/images/'))
-            for img_file in images_dir:
-                if img_file == file_name:
-                    image = img_file
-                    file_path = os.path.join(f'{os.getcwd()}/media/{user.id}/images/{img_file}')
-                    break
-        if os.path.exists(file_path):  # If image exists, return it as a http response.
+            file_path = self.__find_other_matching_file(request, file_name)
+        return file_path
+
+    def __find_other_matching_file(self, request, file_name):
+        user = request.user
+        images_dir = os.listdir(os.path.join(f'{os.getcwd()}/media/{user.id}/images/'))
+        for img_file in images_dir:
+            if img_file == file_name:
+                file_path = os.path.join(f'{os.getcwd()}/media/{user.id}/images/{img_file}')
+                return file_path
+
+    def __handle_open_file(self, file_path):
+        if os.path.exists(file_path):
             with open(file_path, 'rb') as f:
                 image_data = f.read()
                 return HttpResponse(image_data, content_type='image/jpeg')
         return Response({'error': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
 
+    def get(self, request, user_pk, file_name):
+        if not self.__authorize_user(request, user_pk):
+            return Response({'error': 'You do not have access to this image'}, status=status.HTTP_403_FORBIDDEN)
+        file_path = self.__get_file_path(request, file_name)
+        return self.__handle_open_file(file_path)
+
 
 class ExpiringImageAccess(APIView):
     """
     Expiring image access management.
-    Anyone can access the image can access the image if it exists and it's not expired.
+    Anyone can access the image can access the image if it exists, and it's not expired.
     """
 
-    def get(self, request, user_pk, file_name):
+    def __handle_image_is_expired(self, image):
+        current_time_in_seconds = int(time.time())
+        image_time_in_seconds = int(image.created_at.timestamp())
+        if current_time_in_seconds - image_time_in_seconds > int(image.live_time):
+            return True
+
+    def __handle_open_file(self, file_path):
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as f:
+                image_data = f.read()
+                return HttpResponse(image_data, content_type='image/jpeg')
+        return Response({'error': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    def get(self, request, file_name):
         try:
             image = ExpiringImage.objects.get(image=f'expiring-images/{file_name}')
         except ObjectDoesNotExist:
             return Response({'error': 'Image does not exist'}, status=status.HTTP_404_NOT_FOUND)
-        current_time_in_seconds = int(time.time())  # current time in seconds
-        image_time_in_seconds = int(image.created_at.timestamp())  # time since the image was created (in seconds)
-        if current_time_in_seconds - image_time_in_seconds > int(image.live_time):  # if image is expired
+        if self.__handle_image_is_expired(image):
             image.delete()
             return Response({'error': 'Image has expired'}, status=status.HTTP_404_NOT_FOUND)
         file_path = os.path.join(os.path.dirname(image.image.path), file_name)
-        if os.path.exists(file_path):  # If image exists, return it as a http response.
-            with open(file_path, 'rb') as img:
-                image_data = img.read()
-                return HttpResponse(image_data, content_type='image/jpeg')
-        return Response({'error': 'Image not found'}, status=status.HTTP_404_NOT_FOUND)
+        return self.__handle_open_file(file_path)
 
 
 class ImageView(APIView):
@@ -184,6 +203,5 @@ class ImageView(APIView):
                 return Response({'error': 'Image format not supported'}, status=status.HTTP_400_BAD_REQUEST)
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
-                # Call the appropriate tier processing method, by checking user's tier.
                 return self.options.get(user.tier.name, self.__default_tier_processing)(request, image_instance, image)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

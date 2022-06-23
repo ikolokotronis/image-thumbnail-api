@@ -18,13 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 
-from images.views import image_access, expiring_image_access
+from images.views import ImageAccess, ExpiringImageAccess
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('images/', include('images.urls')),
-    path('media/<int:user_pk>/images/<str:file_name>', image_access, name='image-access'),
-    path('media/expiring-images/<str:file_name>', expiring_image_access, name='expiring-image-access'),
+    path('media/<int:user_pk>/images/<str:file_name>', ImageAccess.as_view(), name='image-access'),
+    path('media/expiring-images/<str:file_name>', ExpiringImageAccess.as_view(), name='expiring-image-access'),
 ]
 
 if settings.DEBUG:
