@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('images', '0007_rename_date_added_image_created_at'),
+        ("images", "0007_rename_date_added_image_created_at"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='image',
-            name='expiration_time',
+            model_name="image",
+            name="expiration_time",
         ),
     ]

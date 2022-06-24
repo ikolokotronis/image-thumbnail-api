@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('users', '0002_alter_user_tier'),
+        ("users", "0002_alter_user_tier"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tier',
-            name='thumbnail_height',
+            model_name="tier",
+            name="thumbnail_height",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]

@@ -21,10 +21,18 @@ from django.conf.urls.static import static
 from images.views import ImageAccess, ExpiringImageAccess
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('images/', include('images.urls')),
-    path('media/<int:user_pk>/images/<str:file_name>', ImageAccess.as_view(), name='image-access'),
-    path('media/expiring-images/<str:file_name>', ExpiringImageAccess.as_view(), name='expiring-image-access'),
+    path("admin/", admin.site.urls),
+    path("images/", include("images.urls")),
+    path(
+        "media/<int:user_pk>/images/<str:file_name>",
+        ImageAccess.as_view(),
+        name="image-access",
+    ),
+    path(
+        "media/expiring-images/<str:file_name>",
+        ExpiringImageAccess.as_view(),
+        name="expiring-image-access",
+    ),
 ]
 
 if settings.DEBUG:

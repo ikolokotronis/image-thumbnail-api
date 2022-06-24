@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('images', '0005_alter_image_original_image_expiringimage'),
+        ("images", "0005_alter_image_original_image_expiringimage"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='expiringimage',
-            old_name='live_seconds',
-            new_name='live_time',
+            model_name="expiringimage",
+            old_name="live_seconds",
+            new_name="live_time",
         ),
         migrations.AddField(
-            model_name='expiringimage',
-            name='created_at',
+            model_name="expiringimage",
+            name="created_at",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
     ]

@@ -10,9 +10,10 @@ class User(AbstractUser):
     """
     Custom User Model
     """
+
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
-    tier = models.ForeignKey('Tier', on_delete=models.CASCADE, null=True)
+    tier = models.ForeignKey("Tier", on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.username
@@ -22,8 +23,11 @@ class Tier(models.Model):
     """
     This model is used to store the different tiers that a user can have.
     """
+
     name = models.CharField(max_length=255)
-    thumbnail_height = models.IntegerField(null=True, blank=True)  # can be null for built-in tiers
+    thumbnail_height = models.IntegerField(
+        null=True, blank=True
+    )  # can be null for built-in tiers
     presence_of_original_file_link = models.BooleanField()
     ability_to_fetch_expiring_link = models.BooleanField()
 
