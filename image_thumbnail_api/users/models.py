@@ -21,7 +21,7 @@ class User(AbstractUser):
 
 class Tier(models.Model):
     """
-    This model is used to store the different tiers that a user can have.
+    This model is used to store the different tiers a user can have.
     """
 
     name = models.CharField(max_length=255)
