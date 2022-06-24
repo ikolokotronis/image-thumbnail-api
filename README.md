@@ -127,7 +127,7 @@ Response example (assuming user tier is Enterprise):
     "400px_thumbnail": "/media/1/images/test_ioN602N_400px_thumbnail.jpg",
     "200px_thumbnail": "/media/1/images/test_ioN602N_200px_thumbnail.jpg",
     "original_image": "/media/1/images/test_ioN602N.jpg",
-    "300s_expiring_link": "/media/expiring-images/test_ioN602N.jpg",
+    "500s_expiring_link": "/media/expiring-images/test_ioN602N.jpg",
     "success": "Image uploaded successfully"
 }
 ```
