@@ -49,7 +49,7 @@ Header with authorization token example:
 Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
 ```
 
-### Media accessing endponts
+### Media access endponts
 
 #### Expiring Images
 GET `media/expiring-images/<str:file_name>`
@@ -116,7 +116,7 @@ Content-Type: multipart/form-data
 #### Body
 ```
 {
-  "original_image": image_file.jpg,
+  "original_image": test.jpg,
   "live_time": "500"
 }
 ```
