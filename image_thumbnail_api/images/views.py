@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import Callable
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.http import HttpResponse
@@ -90,7 +91,7 @@ class ExpiringImageAccess(APIView):
                 return HttpResponse(image_data, content_type="image/jpeg")
         return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request: Request, file_name: str) -> Response:  # TODO add method
+    def get(self, request: Request, file_name: str) -> Response | Callable:
         try:
             image = ExpiringImage.objects.get(image=f"expiring-images/{file_name}")
         except ObjectDoesNotExist:
@@ -243,7 +244,7 @@ class ImageView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"No images found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request: Request) -> Response:  # TODO add method
+    def post(self, request: Request) -> Response | Callable:
         """
         Calls the appropriate tier processing method and returns the response.
         """
