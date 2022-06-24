@@ -1,10 +1,12 @@
 import os
-import time
+from datetime import datetime
 
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.core.exceptions import ObjectDoesNotExist
@@ -23,12 +25,13 @@ class ImageAccess(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def __authorize_user(self, request, user_pk):
+    def __authorize_user(self, request: Request, user_pk: str) -> AbstractBaseUser | bool:
         user = request.user
         if user.pk == user_pk:
             return user
+        return False
 
-    def __get_file_path(self, request, file_name):
+    def __get_file_path(self, request: Request, file_name: str) -> str:
         user = request.user
         try:
             image = Image.objects.get(original_image=f"{user.id}/images/{file_name}")
@@ -39,7 +42,7 @@ class ImageAccess(APIView):
             file_path = self.__find_other_matching_file(request, file_name)
         return file_path
 
-    def __find_other_matching_file(self, request, file_name):
+    def __find_other_matching_file(self, request: Request, file_name: str) -> str:
         user = request.user
         images_dir = os.listdir(os.path.join(f"{os.getcwd()}/media/{user.id}/images/"))
         file_path = ""
@@ -50,14 +53,14 @@ class ImageAccess(APIView):
                 )
         return file_path
 
-    def __handle_open_file(self, file_path):
+    def __handle_open_file(self, file_path: str) -> HttpResponse | Response:
         if os.path.exists(file_path):
             with open(file_path, "rb") as f:
                 image_data = f.read()
                 return HttpResponse(image_data, content_type="image/jpeg")
         return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, user_pk, file_name):
+    def get(self, request: Request, user_pk: str, file_name: str) -> Response:
         if not self.__authorize_user(request, user_pk):
             return Response(
                 {"error": "You do not have access to this image"},
@@ -73,20 +76,21 @@ class ExpiringImageAccess(APIView):
     Anyone can access the image can access the image if it exists, and it's not expired.
     """
 
-    def __handle_image_is_expired(self, image):
-        current_time_in_seconds = int(time.time())
+    def __handle_image_is_expired(self, image: ExpiringImage) -> bool:
+        current_time_in_seconds = int(datetime.now().timestamp())
         image_time_in_seconds = int(image.created_at.timestamp())
         if current_time_in_seconds - image_time_in_seconds > int(image.live_time):
             return True
+        return False
 
-    def __handle_open_file(self, file_path):
+    def __handle_open_file(self, file_path: str) -> HttpResponse | Response:
         if os.path.exists(file_path):
             with open(file_path, "rb") as f:
                 image_data = f.read()
                 return HttpResponse(image_data, content_type="image/jpeg")
         return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request, file_name):
+    def get(self, request: Request, file_name: str) -> Response:  # TODO add method
         try:
             image = ExpiringImage.objects.get(image=f"expiring-images/{file_name}")
         except ObjectDoesNotExist:
@@ -114,7 +118,7 @@ class ImageView(APIView):
             "Enterprise": self.__enterprise_tier_processing,
         }
 
-    def __file_processing(self, request, image, image_instance, size):
+    def __file_processing(self, request: Request, image_instance: Image, image: PILImage, size: int) -> tuple:
         """
         Processes image, returns file url and file extension.
         """
@@ -124,12 +128,12 @@ class ImageView(APIView):
         image.save(f".{file_url}_{size}px_thumbnail{file_extension}")
         return file_url, file_extension
 
-    def __basic_tier_processing(self, request, image_instance, image):
+    def __basic_tier_processing(self, request: Request, image_instance: Image, image: PILImage) -> Response:
         """
         Basic tier processing.
         """
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, 200
+            request, image_instance, image, 200
         )
         data = {
             "200px_thumbnail": f"{file_url}_200px_thumbnail{file_extension}",
@@ -137,15 +141,15 @@ class ImageView(APIView):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __premium_tier_processing(self, request, image_instance, image):
+    def __premium_tier_processing(self, request: Request, image_instance: Image, image: PILImage) -> Response:
         """
         Premium tier processing.
         """
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, 400
+            request, image_instance, image, 400
         )
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, 200
+            request, image_instance, image, 200
         )
         data = {
             "400px_thumbnail": f"{file_url}_400px_thumbnail{file_extension}",
@@ -155,7 +159,7 @@ class ImageView(APIView):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __enterprise_tier_processing(self, request, image_instance, image):
+    def __enterprise_tier_processing(self, request: Request, image_instance: Image, image: PILImage) -> Response:
         """
         Enterprise tier processing.
         """
@@ -172,10 +176,10 @@ class ImageView(APIView):
             )
         original_image_url = image_instance.original_image.url
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, 400
+            request, image_instance, image, 400
         )
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, 200
+            request, image_instance, image, 200
         )
         file_name = os.path.splitext(os.path.basename(original_image_url))[0]
         expiring_image = ExpiringImage.objects.create(
@@ -193,13 +197,13 @@ class ImageView(APIView):
         }
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def __default_tier_processing(self, request, image_instance, image):
+    def __default_tier_processing(self, request: Request, image_instance: Image, image: PILImage) -> Response:
         """
         Default tier processing. (for arbitrary tiers)
         """
         user = request.user
         file_url, file_extension = self.__file_processing(
-            request, image, image_instance, user.tier.thumbnail_height
+            request, image_instance, image, user.tier.thumbnail_height
         )
         file_name = os.path.basename(file_url)
         data = {
@@ -229,7 +233,7 @@ class ImageView(APIView):
         data["success"] = "Image uploaded successfully"
         return Response(data, status=status.HTTP_201_CREATED)
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         Lists all images.
         """
@@ -239,7 +243,7 @@ class ImageView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"No images found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:  # TODO add method
         """
         Calls the appropriate tier processing method and returns the response.
         """
