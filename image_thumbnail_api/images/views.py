@@ -257,7 +257,5 @@ class ImageView(APIView):
                 )
             original_image_path = image_instance.original_image.path
             with PILImage.open(original_image_path) as image:
-                return self.options.get(user.tier.name, self.__default_tier_processing)(
-                    request, image_instance, image
-                )
+                return self.options.get(user.tier.name, self.__default_tier_processing)(request, image_instance, image)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
