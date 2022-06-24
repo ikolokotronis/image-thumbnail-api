@@ -65,7 +65,7 @@ GET `media/<int:user_pk>/images/<str:file_name>`
 `GET /images/`
 <br/>
 <br/>
-Images available for user are determined by the token included in the header of the request.  
+Images available for the user are determined by the token included in the header of the request.  
 
 Response example:
 ```
