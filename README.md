@@ -1,4 +1,4 @@
-<h1 align="center">image-thumbnail-api</h1>
+<h3 align="center">image-thumbnail-api</h1>
 <p align="center">A REST API that processes images and returns thumbnails of them in different sizes, based on user's tier.</p>
 
 ## Getting Started
@@ -40,7 +40,12 @@ Apart from the builtin tiers, admins are able to create arbitrary tiers with the
 All endpoints besides <a href="#expiring-images">Expiring Images</a> require a valid token to be included in the header of the
 request.   
 A token is generated for each user when they are created/registered, and can be acquired from the Token model in django-admin, 
-or from the Token table in the database.
+or from the Token table in the database.  
+  
+Header with authorization token example: 
+```
+Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
+```
 
 ### Media accessing endponts
 
@@ -59,11 +64,7 @@ GET `media/<int:user_pk>/images/<str:file_name>`
 <br/>
 <br/>
 Images available for user are determined by the token included in the header of the request.  
-Header example:
 
-```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
-```
 Response example:
 ```
 [
