@@ -1,3 +1,5 @@
+<div id="top"></div>
+
 <h3 align="center">image-thumbnail-api</h1>
 <p align="center">A REST API that processes images and returns thumbnails of them in different sizes, based on user's tier.</p>
 
@@ -129,3 +131,4 @@ Response example (assuming user tier is Enterprise):
     "success": "Image uploaded successfully"
 }
 ```
+<p align="right">(<a href="#top">back to top</a>)</p>
