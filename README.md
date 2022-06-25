@@ -3,6 +3,21 @@
 <h3 align="center">image-thumbnail-api</h1>
 <p align="center">A REST API that processes images and returns thumbnails of them in different sizes, based on user's tier.</p>
 
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li><a href="#tiers">Tiers</a></li>
+    <li><a href="#endpoints">Endpoints</a></li>
+    <li><a href="#testing">Testing</a></li>
+  </ol>
+</details>
+
 ## Getting Started
 This is how to make the project run locally.
 ### Installation
@@ -145,4 +160,14 @@ Response example (assuming user tier is Enterprise):
     "success": "Image uploaded successfully"
 }
 ```
+
+### Testing
+Because the app has no registration functionality, a testing admin user is created upon every container build.   
+To access the account, use these credentials:  
+* <b>username</b>: admin  
+* <b>password</b>: admin
+  
+To access the token that was generated for this account, go to django-admin and view the Token model.  
+You can use it in your request headers.
+
 <p align="right">(<a href="#top">back to top</a>)</p>
