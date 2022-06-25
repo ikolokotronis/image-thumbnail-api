@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import Callable, Union
+from typing import Callable
 
 from django.contrib.auth.models import AbstractUser
 from django.http import HttpResponse
@@ -26,7 +26,7 @@ class ImageAccess(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def __authorize_user(self, request: Request, user_pk: str) -> Union[AbstractUser, bool]:
+    def __authorize_user(self, request: Request, user_pk: str) -> AbstractUser | bool:
         user = request.user
         if user.pk == user_pk:
             return user
@@ -54,7 +54,7 @@ class ImageAccess(APIView):
                 )
         return file_path
 
-    def __handle_open_file(self, file_path: str) -> Union[HttpResponse, Response]:
+    def __handle_open_file(self, file_path: str) -> HttpResponse | Response:
         if os.path.exists(file_path):
             with open(file_path, "rb") as f:
                 image_data = f.read()
@@ -84,14 +84,14 @@ class ExpiringImageAccess(APIView):
             return True
         return False
 
-    def __handle_open_file(self, file_path: str) -> Union[HttpResponse, Response]:
+    def __handle_open_file(self, file_path: str) -> HttpResponse | Response:
         if os.path.exists(file_path):
             with open(file_path, "rb") as f:
                 image_data = f.read()
                 return HttpResponse(image_data, content_type="image/jpeg")
         return Response({"error": "Image not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def get(self, request: Request, file_name: str) -> Union[Response, Callable]:
+    def get(self, request: Request, file_name: str) -> Response | Callable:
         try:
             image = ExpiringImage.objects.get(image=f"expiring-images/{file_name}")
         except ObjectDoesNotExist:
@@ -244,7 +244,7 @@ class ImageView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"No images found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def post(self, request: Request) -> Union[Response, Callable]:
+    def post(self, request: Request) -> Response | Callable:
         """
         Calls the appropriate tier processing method and returns the response.
         """
