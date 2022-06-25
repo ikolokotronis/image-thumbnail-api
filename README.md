@@ -75,7 +75,7 @@ or from the Token table in the database.
   
 Header with authorization token example: 
 ```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc  # This token is only for explainatory purposes and won't work in a real request.
+Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc  # This token is only for explainatory purposes, thus it won't work in a real request.
 ```
 
 ### Media access endponts
