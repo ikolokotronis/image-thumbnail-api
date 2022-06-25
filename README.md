@@ -136,7 +136,7 @@ Request example (assuming user tier is Enterprise):
 
 #### Header
 ```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc,
+Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
 Content-Type: multipart/form-data
 ```
 
