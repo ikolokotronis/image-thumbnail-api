@@ -75,18 +75,16 @@ or from the Token table in the database.
   
 Header with authorization token example: 
 ```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
+Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc  # This token is only for explainatory purposes and won't work in a real request.
 ```
 
 ### Media access endponts
 
-#### Expiring Images
-GET `media/expiring-images/<str:file_name>`
-
-
 #### Standard Images
 GET `media/<int:user_pk>/images/<str:file_name>`
 
+#### Expiring Images
+GET `media/expiring-images/<str:file_name>`
 
 <br/>
 
