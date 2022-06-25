@@ -4,9 +4,23 @@
 <p align="center">A REST API that processes images and returns thumbnails of them in different sizes, based on user's tier.</p>
 
 ## Getting Started
-```
-TODO: setup instructions
-```
+This is how to make the project run locally.
+### Installation
+
+1. Clone the repo
+  ```
+  git clone https://github.com/ikolokotronis/image-thumbnail-api.git
+  ```
+2. Move to docker directory (assuming you are located in the project's root directory)
+  ```
+  cd image_thumbnail_api/
+  cd .docker/
+  ```
+3. Build the container
+  ```
+  docker-compose up --build
+  ```
+4. Now you can access the API at http://127.0.0.1:8080
 
 ## Tiers
 
