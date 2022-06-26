@@ -65,7 +65,7 @@ Apart from the builtin tiers, admins are able to create arbitrary tiers with the
 
 All endpoints besides <a href="#expiring-images">Expiring Images</a> require a valid token to be included in the header of the
 request.   
-A token is generated for each user when they are created/registered, and can be acquired from the Token model in django-admin, 
+A token is generated for each user when they are created, and can be acquired from the Token model in django-admin, 
 or from the Token table in the database.  
   
 Header with authorization token example: 
