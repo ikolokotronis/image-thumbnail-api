@@ -129,8 +129,8 @@ Response example:
 Uploading images require a `original_image` field to be included in the body.  As a value, it expects an image file in png or jpg format.  
 Any other values will be rejected.  
 #### Important note:
-If user's tier comes with ability to fetch expiring links, there shoud also be a `live_time` field in the body, 
-determining the amount of seconds the link will be available before it expires. Number range should be between 300 and 30000.  
+If user's tier plan comes with ability to fetch expiring links, there shoud also be a `live_time` field in the body, 
+determining the amount of seconds the link will be available before it expires. Number range should be between `300` and `30000`.  
   
 Request example (assuming user tier is Enterprise):
 
