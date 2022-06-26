@@ -70,7 +70,7 @@ or from the Token table in the database.
   
 Header with authorization token example: 
 ```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc  # This token is only for explainatory purposes, thus it won't work in a real request.
+Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc  # This token is only for explainatory purposes and won't work in a real request.
 ```
 
 ### Media access endponts
@@ -127,9 +127,8 @@ Any other values will be rejected.
 If user's tier plan comes with ability to fetch expiring links, there shoud also be a `live_time` field in the body, 
 determining the amount of seconds the link will be available before it expires. Number range should be between `300` and `30000`.  
   
-Request example (assuming user tier is Enterprise):
+Request body example (assuming user tier is Enterprise):
 
-#### Body
 ```
 {
   "original_image": test.jpg,
