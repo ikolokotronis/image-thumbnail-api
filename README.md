@@ -8,19 +8,14 @@
   <ol>
     <li>
       <a href="#getting-started">Getting Started</a>
-      <ul>
-        <li><a href="#installation">Installation</a></li>
-      </ul>
     </li>
     <li><a href="#tiers">Tiers</a></li>
     <li><a href="#endpoints">Endpoints</a></li>
-    <li><a href="#testing">Testing</a></li>
+    <li><a href="#testing-user">Testing user</a></li>
   </ol>
 </details>
 
-## Getting Started
-This is how to make the project run locally.
-### Installation
+### Getting Started
 
 1. Clone the repo
   ```
@@ -134,12 +129,6 @@ determining the amount of seconds the link will be available before it expires. 
   
 Request example (assuming user tier is Enterprise):
 
-#### Header
-```
-Authorization: Token b5d557e29ac73caf047db17c7a28b6e962ff0dfc
-Content-Type: multipart/form-data
-```
-
 #### Body
 ```
 {
@@ -159,12 +148,13 @@ Response example (assuming user tier is Enterprise):
 }
 ```
 
-### Testing
+### Testing user
 Because the app has no registration functionality, a testing admin user is created upon every container build.   
 To access the account, use these credentials:  
 * <b>username</b>: admin  
-* <b>password</b>: admin
+* <b>password</b>: admin  
   
+Admin's default tier is <b>Enterprise</b>.  
 To access the token that was generated for this account, go to django-admin and view the Token model.  
 You can use it in your request headers.
 
