@@ -20,7 +20,7 @@ from PIL import Image as PILImage
 class ImageAccess(APIView):
     """
     Image access management.
-    Only the owner of the image can access the image if it exists.
+    Only the owner of the image can access the image, if it exists.
     """
 
     authentication_classes = [TokenAuthentication]
@@ -74,7 +74,7 @@ class ImageAccess(APIView):
 class ExpiringImageAccess(APIView):
     """
     Expiring image access management.
-    Anyone can access the image can access the image if it exists, and it's not expired.
+    Anyone can access the image can access the image, if it exists and it's not expired.
     """
 
     def __handle_image_is_expired(self, image: ExpiringImage) -> bool:
