@@ -149,7 +149,7 @@ Response example (assuming user tier is Enterprise):
 ```
 
 ### Testing user
-Because the app has no registration functionality, a testing admin user is created upon every container build.   
+Because the API has no registration functionality, a testing admin user is created upon every container build.   
 To access the account, use these credentials:  
 * <b>username</b>: admin  
 * <b>password</b>: admin  
