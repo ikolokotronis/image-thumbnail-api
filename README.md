@@ -106,11 +106,6 @@ Response example:
         "pk": 29,
         "original_image": "/media/1/images/test_W0gfr22.jpg",
         "created_at": "2022-06-23T13:00:54.707904Z"
-    },
-    {
-        "pk": 30,
-        "original_image": "/media/1/images/test_WmeDTuE.jpg",
-        "created_at": "2022-06-23T13:01:25.230068Z"
     }
 ]
 ```
@@ -148,13 +143,12 @@ Response example (assuming user tier is Enterprise):
 ```
 
 ### Testing user
-Because the API has no registration functionality, a testing admin user is created upon every container build.   
+Because the API has no registration functionality, a testing admin user is created upon every container build, to allow accessing the django-admin panel.   
 To access the account, use these credentials:  
 * <b>username</b>: admin  
 * <b>password</b>: admin  
   
 Admin's default tier is <b>Enterprise</b>.  
 To access the token that was generated for this account, go to django-admin and view the Token model.  
-You can use it in your request headers.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
